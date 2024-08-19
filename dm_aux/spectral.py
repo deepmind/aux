@@ -67,10 +67,11 @@ def stft(signal: chex.Array,
     frame_step: the hop size of extracting signal frames. If unspecified it
       defaults to be equal to `int(frame_length // 2)`.
     window_fn: applied to each frame to remove the discontinuities at the edge
-      of the frame introduced by segmentation. It is passed to
+      of the frame introduced by segmentation. If it is a str, it is passed to
       `scipy.signal.get_window` - see the oringal Scipy doc for more details
       (docs.scipy.org/doc/scipy-1.7.1/reference/generated/scipy.signal
-       .get_window.html).
+       .get_window.html). If not a str, it must be a callable that accepts a
+       frame length, or a jax.numpy array.
     pad: pad the signal at the end(s) by `int(n_fft // 2)`. Can either be
       `Pad.NONE`, `Pad.START`, `Pad.END`, `Pad.BOTH`, `Pad.ALIGNED`.
     pad_mode: the mode of padding of the signal when `pad` is not None. It is a
@@ -99,7 +100,12 @@ def stft(signal: chex.Array,
   signal = signal[:, :, jnp.newaxis]
 
   # Get the window function.
-  fft_window = sp_signal.get_window(window_fn, frame_length, fftbins=True)
+  if callable(window_fn):
+    fft_window = window_fn(frame_length)
+  elif isinstance(window_fn, jnp.ndarray):
+    fft_window = window_fn
+  else:
+    fft_window = sp_signal.get_window(window_fn, frame_length, fftbins=True)
   # Pad the window to length n_fft with zeros.
   if frame_length < n_fft:
     left_pad = int((n_fft - frame_length) // 2)

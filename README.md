@@ -36,7 +36,7 @@ noise to a raw audio waveform.
 import dm_aux as aux
 import jax
 
-# Load an waveform into a NumPy array with your preferred library.
+# Load a waveform into a NumPy array with your preferred library.
 x = load_waveform()
 
 key = jax.random.PRNGKey(0)
