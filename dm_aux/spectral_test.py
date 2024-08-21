@@ -49,6 +49,10 @@ class SpectralTest(parameterized.TestCase):
            n_fft=320, hop_length=160, win_length=160, window='hann'),
       dict(testcase_name='longer_input', data_length=8000, n_fft=320,
            hop_length=160, win_length=320, window='hann'),
+      dict(testcase_name='custom_window_array', data_length=4000, n_fft=320,
+           hop_length=160, win_length=320, window=scipy.signal.get_window('hann', 320)),
+      dict(testcase_name='custom_window_fn', data_length=4000, n_fft=320,
+           hop_length=160, win_length=320, window=functools.partial(scipy.signal.get_window, 'hann')),
       )
   def test_stft_matches_librosa(self, data_length, n_fft, hop_length,
                                 win_length, window):
@@ -67,12 +71,12 @@ class SpectralTest(parameterized.TestCase):
     stft_matrix = spectral.stft(
         signal=data, n_fft=n_fft, frame_length=win_length,
         frame_step=hop_length, window_fn=window, pad=Pad.BOTH,
-        precision=self._get_precision(), pad_mode='reflect')
+        precision=self._get_precision(), pad_mode='constant')
 
     spectral_stft = jax.jit(functools.partial(
         spectral.stft, n_fft=n_fft, frame_length=win_length,
         frame_step=hop_length, window_fn=window, pad=Pad.BOTH,
-        precision=self._get_precision(), pad_mode='reflect'))
+        precision=self._get_precision(), pad_mode='constant'))
     stft_matrix_jit = spectral_stft(signal=data)
 
     np.testing.assert_allclose(stft_matrix[0], stft_matrix_np, rtol=1e-3,
@@ -181,6 +185,10 @@ class SpectralTest(parameterized.TestCase):
            hop_length=160, win_length=320, window='hamming'),
       dict(testcase_name='shorter_input', data_length=4000, n_fft=320,
            hop_length=160, win_length=320, window='hann'),
+      dict(testcase_name='custom_window_array', data_length=8000, n_fft=320,
+           hop_length=160, win_length=320, window=scipy.signal.get_window('hann', 320)),
+      dict(testcase_name='custom_window_fn', data_length=8000, n_fft=320,
+           hop_length=160, win_length=320, window=functools.partial(scipy.signal.get_window, 'hann')),
       )
   def test_istft_matches_librosa(self, data_length, n_fft, hop_length,
                                  win_length, window):
@@ -192,7 +200,7 @@ class SpectralTest(parameterized.TestCase):
     stft_matrix = spectral.stft(
         signal=data, n_fft=n_fft, frame_length=win_length,
         frame_step=hop_length, window_fn=window, pad=Pad.BOTH,
-        precision=self._get_precision(), pad_mode='reflect')
+        precision=self._get_precision(), pad_mode='constant')
 
     # Librosa iSTFT
     reconst_data_np = librosa.core.istft(
@@ -231,7 +239,7 @@ class SpectralTest(parameterized.TestCase):
     stft_matrix = spectral.stft(
         signal=data, n_fft=n_fft, frame_length=win_length,
         frame_step=hop_length, window_fn=window, pad=pad,
-        precision=self._get_precision(), pad_mode='reflect')
+        precision=self._get_precision(), pad_mode='constant')
 
     reconst_data = spectral.istft(
         stft_matrix=stft_matrix, frame_length=win_length, frame_step=hop_length,
