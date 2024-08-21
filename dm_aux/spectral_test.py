@@ -49,6 +49,10 @@ class SpectralTest(parameterized.TestCase):
            n_fft=320, hop_length=160, win_length=160, window='hann'),
       dict(testcase_name='longer_input', data_length=8000, n_fft=320,
            hop_length=160, win_length=320, window='hann'),
+      dict(testcase_name='custom_window_array', data_length=4000, n_fft=320,
+           hop_length=160, win_length=320, window=scipy.signal.get_window('hann', 320)),
+      dict(testcase_name='custom_window_fn', data_length=4000, n_fft=320,
+           hop_length=160, win_length=320, window=functools.partial(scipy.signal.get_window, 'hann')),
       )
   def test_stft_matches_librosa(self, data_length, n_fft, hop_length,
                                 win_length, window):
@@ -181,6 +185,10 @@ class SpectralTest(parameterized.TestCase):
            hop_length=160, win_length=320, window='hamming'),
       dict(testcase_name='shorter_input', data_length=4000, n_fft=320,
            hop_length=160, win_length=320, window='hann'),
+      dict(testcase_name='custom_window_array', data_length=8000, n_fft=320,
+           hop_length=160, win_length=320, window=scipy.signal.get_window('hann', 320)),
+      dict(testcase_name='custom_window_fn', data_length=8000, n_fft=320,
+           hop_length=160, win_length=320, window=functools.partial(scipy.signal.get_window, 'hann')),
       )
   def test_istft_matches_librosa(self, data_length, n_fft, hop_length,
                                  win_length, window):
